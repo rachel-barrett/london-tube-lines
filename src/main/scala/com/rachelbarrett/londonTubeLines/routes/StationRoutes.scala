@@ -1,14 +1,27 @@
 package com.rachelbarrett.londonTubeLines.routes
 
+import cats.Applicative
 import cats.effect.IO
-import org.http4s.HttpRoutes
+import com.rachelbarrett.londonTubeLines.services.StationService
+import org.http4s.{EntityEncoder, HttpRoutes}
 import org.http4s.dsl.io._
+import org.http4s.circe.jsonEncoderOf
 
 object StationRoutes {
 
-  def stationRoutes: HttpRoutes[IO] =
+  import Encoders._
+
+  def apply(stationService: StationService): HttpRoutes[IO] =
     HttpRoutes.of[IO] {
-      case GET -> Root / "stations" => Ok("stations")
+      case GET -> Root / "stations" => Ok(stationService.getAllStations())
     }
+
+  def apply(): HttpRoutes[IO] = apply(new StationService)
+
+  object Encoders {
+
+    implicit def listEntityEncoder[F[_]: Applicative]: EntityEncoder[F,List[String]] = jsonEncoderOf
+
+  }
 
 }
