@@ -17,13 +17,3 @@ class Server(
     .drain
 
 }
-
-object Server {
-
-  def apply()(implicit T: Timer[IO], C: ConcurrentEffect[IO]): Server =
-    new Server(
-      port = 8080,
-      httpApp = HttpApp()
-    )(T, C)
-
-}

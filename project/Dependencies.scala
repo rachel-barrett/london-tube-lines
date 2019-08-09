@@ -5,6 +5,8 @@ object Dependencies {
   val http4sVersion = "0.20.6"
   val circeVersion = "0.11.1"
   val scalaTestVersion = "3.0.8"
+  val sqlLiteVersion = "3.28.0"
+  val doobieVersion = "0.7.0"
   
   
   lazy val http4s = Seq(
@@ -22,7 +24,15 @@ object Dependencies {
   lazy val scalaTest = Seq(
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test
   )
+
+  lazy val sqlLite = Seq(
+    "org.xerial" % "sqlite-jdbc" % sqlLiteVersion
+  )
+
+  lazy val doobie = Seq(
+    "org.tpolecat" %% "doobie-core" % doobieVersion
+  )
   
-  lazy val all = http4s ++ circe ++ scalaTest
+  lazy val all = http4s ++ circe ++ scalaTest ++ sqlLite ++ doobie
   
 }
