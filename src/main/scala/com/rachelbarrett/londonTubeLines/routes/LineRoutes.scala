@@ -13,10 +13,13 @@ object LineRoutes {
 
   def apply(lineService: LineService): HttpRoutes[IO] =
     HttpRoutes.of[IO] {
+      case GET -> Root / "lines" :? StationQueryParamMatcher(station) => Ok(lineService.getLinesPassingThroughStation(station))
       case GET -> Root / "lines" => Ok(lineService.getAllLines())
     }
 
-  def apply(): HttpRoutes[IO] = apply(new LineService)
+  def apply(): HttpRoutes[IO] = apply(LineService())
+
+  object StationQueryParamMatcher extends QueryParamDecoderMatcher[String]("passingThroughStation")
 
   object Encoders {
 

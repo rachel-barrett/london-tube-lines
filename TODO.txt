@@ -1,0 +1,6 @@
+* Dao
+* Initialisation functionally
+* Logging
+* Remove mention of IO
+* Tests
+* Database migration

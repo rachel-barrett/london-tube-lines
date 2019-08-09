@@ -1,15 +1,20 @@
 package com.rachelbarrett.londonTubeLines.services
 
-class LineService {
+import com.rachelbarrett.londonTubeLines.daos.StationLineDao
+
+class LineService(stationLineDao: StationLineDao) {
 
   def getAllLines(): List[String] =
-    List(
-      "Line1",
-      "Line2",
-      "Line3"
-    )
+    stationLineDao.find().map(_._1).distinct
 
-  def linesPassingThroughStation(line: String): List[String] = getAllLines()
+  def getLinesPassingThroughStation(station: String): List[String] =
+    stationLineDao.find().filter(_._2 == station).map(_._1)
+
+}
+
+object LineService {
+
+  def apply(): LineService = new LineService(new StationLineDao)
 
 }
 
