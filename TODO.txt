@@ -1,5 +1,5 @@
-* Dao
-* Initialisation functionally
+/ Dao
+/ Initialisation functionally
 * Logging
 * Remove mention of IO
 * Tests

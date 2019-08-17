@@ -1,12 +1,21 @@
 package com.rachelbarrett.londonTubeLines
 
-import cats.effect.{ConcurrentEffect, ContextShift, IO, Timer}
+import cats.effect.{ConcurrentEffect, ContextShift, IO, Resource, Timer}
 import com.rachelbarrett.londonTubeLines.daos.StationLineDao
 import com.rachelbarrett.londonTubeLines.routes.{LineRoutes, StationRoutes}
 import com.rachelbarrett.londonTubeLines.services.{LineService, StationService}
 import doobie.util.transactor.Transactor
 
 object AppComponent {
+
+  def run()(implicit cs: ContextShift[IO], T: Timer[IO], C: ConcurrentEffect[IO]): IO[Unit] = for {
+    config <- Config.load
+    environmentHandle <- EnvironmentHandle.apply(config)
+    _ <- environmentHandle.use { environmentHandle =>
+      val server = Server.apply(environmentHandle)
+      server.start
+    }
+  } yield ()
 
   object Config {
 
@@ -22,13 +31,13 @@ object AppComponent {
 
   object EnvironmentHandle {
 
-    import Config._
+    import Config.Config
 
-    def apply(config: Config)(implicit cs: ContextShift[IO]): IO[EnvironmentHandle] = {
+    def apply(config: Config)(implicit cs: ContextShift[IO]): IO[Resource[IO, EnvironmentHandle]] = {
       val transactor: Transactor[IO] = Transactor.fromDriverManager.apply[IO](
         "org.sqlite.JDBC", config.databaseUrl, "", ""
       )
-      IO.pure(EnvironmentHandle(transactor))
+      IO.pure(Resource.pure(EnvironmentHandle(transactor)))
     }
 
     case class EnvironmentHandle(
@@ -40,7 +49,7 @@ object AppComponent {
 
   object Server {
 
-    import EnvironmentHandle._
+    import EnvironmentHandle.EnvironmentHandle
 
     def apply(environmentHandle: EnvironmentHandle)(implicit T: Timer[IO], C: ConcurrentEffect[IO]): Server = {
       val stationLineDao = new StationLineDao(environmentHandle.transactor)
