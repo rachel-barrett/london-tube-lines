@@ -1,14 +1,14 @@
 / Dao
 / Initialisation functionally
-* Database data initialisation
-* Error propogation
-* Logging
-* Database transactor as a resource
-* Pure config
+/ Database transactor as a resource
+~ Http4s connection pool understanding
 * Tests
+* Logging
+* Error propogation
+* Database data initialisation
+* Pure config
 * Bad request response?
 * Swagger endpoint
-* Http4s connection pool understanding
 * Remove mention of IO and context shift etc..
 * Remove use of classes, in favour of objects and traits?
 * Database migration

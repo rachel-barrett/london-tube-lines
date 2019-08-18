@@ -4,6 +4,8 @@ import cats.effect.{ConcurrentEffect, ContextShift, IO, Resource, Timer}
 import com.rachelbarrett.londonTubeLines.daos.LineStationDao
 import com.rachelbarrett.londonTubeLines.routes.{LineRoutes, StationRoutes}
 import com.rachelbarrett.londonTubeLines.services.{LineService, StationService}
+import doobie.hikari.HikariTransactor
+import doobie.util.ExecutionContexts
 import doobie.util.transactor.Transactor
 
 object AppComponent {
@@ -33,12 +35,21 @@ object AppComponent {
 
     import Config.Config
 
-    def apply(config: Config)(implicit cs: ContextShift[IO]): IO[Resource[IO, EnvironmentHandle]] = {
-      val transactor: Transactor[IO] = Transactor.fromDriverManager.apply[IO](
-        "org.sqlite.JDBC", config.databaseUrl, "", ""
+    def apply(config: Config)(implicit cs: ContextShift[IO]): IO[Resource[IO, EnvironmentHandle]] =
+      IO.pure(hikariTransactor(config.databaseUrl).map(EnvironmentHandle(_)))
+
+    private def hikariTransactor(databaseUrl: String)(implicit cs: ContextShift[IO]): Resource[IO, HikariTransactor[IO]] = for {
+      ce <- ExecutionContexts.fixedThreadPool[IO](32) // our connect EC - await connection here
+      te <- ExecutionContexts.cachedThreadPool[IO] // our transaction EC - execute JDBC operations here
+      xa <- HikariTransactor.newHikariTransactor[IO](
+        driverClassName = "org.sqlite.JDBC",
+        url = databaseUrl,
+        user = "",
+        pass = "",
+        ce,
+        te
       )
-      IO.pure(Resource.pure(EnvironmentHandle(transactor)))
-    }
+    } yield xa
 
     case class EnvironmentHandle(
       transactor: Transactor[IO]

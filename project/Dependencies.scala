@@ -30,7 +30,8 @@ object Dependencies {
   )
 
   lazy val doobie = Seq(
-    "org.tpolecat" %% "doobie-core" % doobieVersion
+    "org.tpolecat" %% "doobie-core" % doobieVersion,
+    "org.tpolecat" %% "doobie-hikari" % doobieVersion
   )
   
   lazy val all = http4s ++ circe ++ scalaTest ++ sqlLite ++ doobie
