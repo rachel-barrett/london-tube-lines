@@ -1,6 +1,20 @@
 / Dao
 / Initialisation functionally
+* Database data initialisation
+* Error propogation
 * Logging
-* Remove mention of IO
+* Database transactor as a resource
+* Pure config
 * Tests
+* Bad request response?
+* Swagger endpoint
+* Http4s connection pool understanding
+* Remove mention of IO and context shift etc..
+* Remove use of classes, in favour of objects and traits?
 * Database migration
+* Scala format
+* Build pipeline
+* Automated swagger generation?
+* Integration test?
+* Dockerisation?
+* Corresponding front end app with dropdowns?

@@ -2,7 +2,7 @@ package com.rachelbarrett.londonTubeLines.routes
 
 import cats.Applicative
 import cats.effect.IO
-import com.rachelbarrett.londonTubeLines.routes.StationRoutes.LineQueryParamMatcher
+import com.rachelbarrett.londonTubeLines.routes.StationRoutes.OnLine
 import com.rachelbarrett.londonTubeLines.services.StationService
 import org.http4s.circe.jsonEncoderOf
 import org.http4s.dsl.io._
@@ -15,14 +15,16 @@ class StationRoutes(stationService: StationService) {
 
   def stationRoutes: HttpRoutes[IO] =
     HttpRoutes.of[IO] {
-      case GET -> Root / "stations" :? LineQueryParamMatcher(line) => Ok(stationService.getStationsOnLine(line))
-      case GET -> Root / "stations" => Ok(stationService.getAllStations())
+      case GET -> Root / "stations" :? OnLine(line) =>
+        Ok(stationService.getStationsOnLine(line))
+      case GET -> Root / "stations" =>
+        Ok(stationService.getAllStations())
     }
 }
 
 object StationRoutes {
 
-  object LineQueryParamMatcher extends QueryParamDecoderMatcher[String]("onLine")
+  object OnLine extends QueryParamDecoderMatcher[String]("onLine")
 
   object Encoders {
 

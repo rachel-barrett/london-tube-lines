@@ -1,15 +1,17 @@
 package com.rachelbarrett.londonTubeLines.services
 
 import cats.effect.IO
-import com.rachelbarrett.londonTubeLines.daos.StationLineDao
+import com.rachelbarrett.londonTubeLines.daos.LineStationDao
 
-class LineService(stationLineDao: StationLineDao) {
+class LineService(stationLineDao: LineStationDao) {
 
-  def getAllLines(): IO[List[String]] =
-    stationLineDao.find().map(list => list.map(_._1).distinct)
+  type Line = String
 
-  def getLinesPassingThroughStation(station: String): IO[List[String]] =
-    stationLineDao.find().map(list => list.filter(_._2 == station)).map(list => list.map(_._1))
+  def getAllLines(): IO[List[Line]] =
+    stationLineDao.find().map(list => list.map(_.line).distinct)
+
+  def getLinesPassingThroughStation(station: String): IO[List[Line]] =
+    stationLineDao.find().map(list => list.filter(_.station == station)).map(list => list.map(_.line))
 
 }
 

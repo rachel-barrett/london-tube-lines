@@ -1,7 +1,7 @@
 package com.rachelbarrett.londonTubeLines
 
 import cats.effect.{ConcurrentEffect, ContextShift, IO, Resource, Timer}
-import com.rachelbarrett.londonTubeLines.daos.StationLineDao
+import com.rachelbarrett.londonTubeLines.daos.LineStationDao
 import com.rachelbarrett.londonTubeLines.routes.{LineRoutes, StationRoutes}
 import com.rachelbarrett.londonTubeLines.services.{LineService, StationService}
 import doobie.util.transactor.Transactor
@@ -52,12 +52,15 @@ object AppComponent {
     import EnvironmentHandle.EnvironmentHandle
 
     def apply(environmentHandle: EnvironmentHandle)(implicit T: Timer[IO], C: ConcurrentEffect[IO]): Server = {
-      val stationLineDao = new StationLineDao(environmentHandle.transactor)
+      val stationLineDao = new LineStationDao(environmentHandle.transactor)
       val lineService = new LineService(stationLineDao)
       val stationService = new StationService(stationLineDao)
       val lineRoutes = new LineRoutes(lineService)
       val stationRoutes = new StationRoutes(stationService)
-      val routes = List(lineRoutes.lineRoutes, stationRoutes.stationRoutes)
+      val routes = List(
+        lineRoutes.lineRoutes,
+        stationRoutes.stationRoutes
+      )
       val httpApp = HttpApp.apply(routes)
       new Server(8080, httpApp)
     }

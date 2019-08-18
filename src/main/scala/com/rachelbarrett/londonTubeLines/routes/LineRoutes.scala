@@ -2,7 +2,7 @@ package com.rachelbarrett.londonTubeLines.routes
 
 import cats.Applicative
 import cats.effect.IO
-import com.rachelbarrett.londonTubeLines.routes.LineRoutes.StationQueryParamMatcher
+import com.rachelbarrett.londonTubeLines.routes.LineRoutes.PassingThroughStation
 import com.rachelbarrett.londonTubeLines.services.LineService
 import org.http4s.circe.jsonEncoderOf
 import org.http4s.dsl.io._
@@ -13,15 +13,17 @@ class LineRoutes(lineService: LineService) {
   import LineRoutes.Encoders._
 
   def lineRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case GET -> Root / "lines" :? StationQueryParamMatcher(station) => Ok(lineService.getLinesPassingThroughStation(station))
-    case GET -> Root / "lines" => Ok(lineService.getAllLines())
+    case GET -> Root / "lines" :? PassingThroughStation(station) =>
+      Ok(lineService.getLinesPassingThroughStation(station))
+    case GET -> Root / "lines" =>
+      Ok(lineService.getAllLines())
   }
 
 }
 
 object LineRoutes {
 
-  object StationQueryParamMatcher extends QueryParamDecoderMatcher[String]("passingThroughStation")
+  object PassingThroughStation extends QueryParamDecoderMatcher[String]("passingThroughStation")
 
   object Encoders {
 
