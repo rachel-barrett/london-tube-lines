@@ -1,12 +1,16 @@
+DROP TABLE IF EXISTS lineStation;
+
 CREATE TABLE lineStation(
     line    STRING NOT NULL,
     station STRING NOT NULL
 );
 
-INSERT INTO lineStation values("line1", "station1");
-INSERT INTO lineStation values("line1", "station2");
-INSERT INTO lineStation values("line1", "station3");
-INSERT INTO lineStation values("line2", "station3");
-INSERT INTO lineStation values("line2", "station4");
-INSERT INTO lineStation values("line3", "station4");
-INSERT INTO lineStation values("line3", "station5");
+INSERT INTO lineStation values
+("Central", "Nptting Hill Gate"),
+("Central", "Bond Street"),
+("Jubilee", "Bond Street"),
+("Jubilee", "Green Park"),
+("Jubilee", "Westminster"),
+("Jubilee", "London Bridge"),
+("Northern", "London Bridge"),
+("Northern", "King's Cross St Pancras");

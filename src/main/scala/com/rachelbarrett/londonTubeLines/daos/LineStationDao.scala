@@ -8,9 +8,9 @@ import doobie.Transactor
 class LineStationDao(transactor: Transactor[IO]) {
 
   //TODO: Should two services use the same dao?
-
+  
   def find(): IO[List[LineStation]] =
-    sql"select line, station from stationLine"
+    sql"select line, station from lineStation"
       .query[LineStation]
       .to[List]
       .transact(transactor)
