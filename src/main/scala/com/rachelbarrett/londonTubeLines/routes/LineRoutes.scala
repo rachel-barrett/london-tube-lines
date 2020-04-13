@@ -13,9 +13,9 @@ class LineRoutes(lineService: LineService) {
   import LineRoutes.Encoders._
 
   def lineRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case GET -> Root / "lines" :? PassingThroughStation(station) =>
+    case GET -> Root :? PassingThroughStation(station) =>
       Ok(lineService.getLinesPassingThroughStation(station))
-    case GET -> Root / "lines" =>
+    case GET -> Root =>
       Ok(lineService.getAllLines())
   }
 

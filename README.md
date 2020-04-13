@@ -8,3 +8,4 @@ Things I aim to achieve/ experiment with in this template
 * No cake
 * Co-location of entities and services 
 
+I've noticed this is quite similar to [scala-pet-store](https://github.com/pauljamescleary/scala-pet-store) linked to as an example project from the [cats website](https://typelevel.org/cats/resources_for_learners.html). Since this commit, I've made changes influenced by the project linked.

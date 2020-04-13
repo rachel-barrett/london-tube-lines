@@ -2,19 +2,27 @@
 / Initialisation functionally
 / Database transactor as a resource
 ~ Http4s connection pool understanding
-* Tests
-* Logging
-* Error propogation
-* Database data initialisation
-* Pure config
-* Bad request response?
-* Swagger endpoint
-* Remove mention of IO and context shift etc..
-* Remove use of classes, in favour of objects and traits?
-* Database migration
-* Scala format
-* Build pipeline
-* Automated swagger generation?
-* Integration test?
-* Dockerisation?
-* Corresponding front end app with dropdowns?
+/ Make use of a Router
+* Change server to be a resource rather than run directly?
+* Abstract IO to main only, use F elsewhere
+
+- swagger endpoint
+- Automated swagger generation?
+- Scala format
+- Desugaring http4s dsl
+- Tests
+- Logging
+- Error propogation
+- Database data initialisation
+- Pure config
+- Bad request response?
+- Remove mention of IO and context shift etc..
+- Remove use of classes, in favour of objects and traits?
+- Database migration
+- Build pipeline
+- Deployment to ECS
+- Integration test?
+- Dockerisation?
+- Corresponding front end app with dropdowns?
+- Using kafka
+- Using a blaze client

@@ -2,7 +2,7 @@ package com.rachelbarrett.londonTubeLines
 
 import cats.effect.{ConcurrentEffect, ContextShift, IO, Resource, Timer}
 import com.rachelbarrett.londonTubeLines.daos.LineStationDao
-import com.rachelbarrett.londonTubeLines.routes.{LineRoutes, StationRoutes}
+import com.rachelbarrett.londonTubeLines.routes.{HttpApp, LineRoutes, StationRoutes}
 import com.rachelbarrett.londonTubeLines.services.{LineService, StationService}
 import doobie.hikari.HikariTransactor
 import doobie.util.ExecutionContexts
@@ -68,11 +68,7 @@ object AppComponent {
       val stationService = new StationService(stationLineDao)
       val lineRoutes = new LineRoutes(lineService)
       val stationRoutes = new StationRoutes(stationService)
-      val routes = List(
-        lineRoutes.lineRoutes,
-        stationRoutes.stationRoutes
-      )
-      val httpApp = HttpApp.apply(routes)
+      val httpApp = HttpApp.apply(lineRoutes, stationRoutes)
       new Server(8080, httpApp)
     }
 

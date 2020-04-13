@@ -15,9 +15,9 @@ class StationRoutes(stationService: StationService) {
 
   def stationRoutes: HttpRoutes[IO] =
     HttpRoutes.of[IO] {
-      case GET -> Root / "stations" :? OnLine(line) =>
+      case GET -> Root :? OnLine(line) =>
         Ok(stationService.getStationsOnLine(line))
-      case GET -> Root / "stations" =>
+      case GET -> Root =>
         Ok(stationService.getAllStations())
     }
 }
