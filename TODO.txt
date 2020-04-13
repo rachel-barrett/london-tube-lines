@@ -3,12 +3,14 @@
 / Database transactor as a resource
 ~ Http4s connection pool understanding
 / Make use of a Router
-* Change server to be a resource rather than run directly?
-* Abstract IO to main only, use F elsewhere
-
+/ Change server to be a resource rather than run directly
+- Database migration flyway
 - swagger endpoint
 - Automated swagger generation?
 - Scala format
+- Corresponding front end app with dropdowns?
+- load actual london tube lines data
+- Abstract IO to main only, use F elsewhere
 - Desugaring http4s dsl
 - Tests
 - Logging
@@ -18,11 +20,9 @@
 - Bad request response?
 - Remove mention of IO and context shift etc..
 - Remove use of classes, in favour of objects and traits?
-- Database migration
 - Build pipeline
 - Deployment to ECS
 - Integration test?
 - Dockerisation?
-- Corresponding front end app with dropdowns?
 - Using kafka
 - Using a blaze client
