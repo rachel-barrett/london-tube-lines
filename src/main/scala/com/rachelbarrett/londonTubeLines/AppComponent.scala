@@ -8,36 +8,74 @@ import doobie.hikari.HikariTransactor
 import doobie.util.ExecutionContexts
 import doobie.util.transactor.Transactor
 import org.http4s
-import org.http4s.server.Server
+import org.http4s.server.{Server => http4sServer}
 import org.http4s.server.blaze.BlazeServerBuilder
 
 object AppComponent {
 
-  def resource()(implicit cs: ContextShift[IO], T: Timer[IO], C: ConcurrentEffect[IO]): Resource[IO, Server[IO]] = for {
-    config <- Resource.liftF(Config.load)
-    environmentHandle <- EnvironmentHandle.resource(config)
-    server <- Server.resource(environmentHandle)
-  } yield server
+  object Server {
 
+    def resource()(implicit cs: ContextShift[IO], T: Timer[IO], C: ConcurrentEffect[IO]): Resource[IO, Server] =
+      for {
+        httpApp <- HttpApp.resource
+        port <- Resource.liftF(Config.load.map(_.port))
+        server <- resource(port, httpApp)
+      } yield server
 
-  object Config {
+    private def resource(port:Int, httpApp: http4s.HttpApp[IO])(implicit T: Timer[IO], C: ConcurrentEffect[IO]): Resource[IO, Server] =
+      BlazeServerBuilder[IO]
+        .bindHttp(port = port, host = "localhost")
+        .withHttpApp(httpApp)
+        .resource
+        .map(new Server(_))
 
-    def load: IO[Config] = IO.pure(
-      Config("jdbc:sqlite:data/london-tube-lines.db")
-    )
+    class Server(server: http4sServer[IO]) {
 
-    case class Config(
-      databaseUrl: String
-    )
+      def runIndefinitely(): IO[Unit] = for {
+        _ <- IO.delay(println(s"Server running at ${server.baseUri}"))
+        _ <- IO.never
+      } yield ()
+
+    }
+
+  }
+
+  object HttpApp {
+
+    def resource()(implicit cs: ContextShift[IO]): Resource[IO, http4s.HttpApp[IO]] =
+      for {
+        environmentHandle <- EnvironmentHandle.resource
+        httpApp = apply(environmentHandle)
+      } yield httpApp
+
+    private def apply(environmentHandle: EnvironmentHandle.EnvironmentHandle): http4s.HttpApp[IO] =
+      {
+        val stationLineDao = new LineStationDao(environmentHandle.transactor)
+        val lineService = new LineService(stationLineDao)
+        val stationService = new StationService(stationLineDao)
+        val lineRoutes = new LineRoutes(lineService)
+        val stationRoutes = new StationRoutes(stationService)
+        val httpApp = routes.HttpApp.apply(lineRoutes, stationRoutes)
+        httpApp
+      }
 
   }
 
   object EnvironmentHandle {
 
-    import Config.Config
+    def resource()(implicit cs: ContextShift[IO]): Resource[IO, EnvironmentHandle] =
+     for {
+       config <- Resource.liftF(Config.load)
+       environmentHandle <- resource(config)
+     } yield environmentHandle
 
-    def resource(config: Config)(implicit cs: ContextShift[IO]): Resource[IO, EnvironmentHandle] =
-      hikariTransactor(config.databaseUrl).map(EnvironmentHandle(_))
+    private def resource(config: Config.Config)(implicit cs: ContextShift[IO]): Resource[IO, EnvironmentHandle] =
+      for {
+        hikariTransactor <- hikariTransactor(config.databaseUrl)
+        environmentHandle = EnvironmentHandle(
+          transactor = hikariTransactor
+        )
+      } yield environmentHandle
 
     private def hikariTransactor(databaseUrl: String)(implicit cs: ContextShift[IO]): Resource[IO, HikariTransactor[IO]] = for {
       ce <- ExecutionContexts.fixedThreadPool[IO](32) // our connect EC - await connection here
@@ -58,27 +96,21 @@ object AppComponent {
 
   }
 
-  object Server {
+  object Config {
 
-    import EnvironmentHandle.EnvironmentHandle
+    def load(): IO[Config] = IO.pure(default)
 
-    def resource(environmentHandle: EnvironmentHandle)(implicit T: Timer[IO], C: ConcurrentEffect[IO]): Resource[IO, Server[IO]] = {
-      val stationLineDao = new LineStationDao(environmentHandle.transactor)
-      val lineService = new LineService(stationLineDao)
-      val stationService = new StationService(stationLineDao)
-      val lineRoutes = new LineRoutes(lineService)
-      val stationRoutes = new StationRoutes(stationService)
-      val httpApp = HttpApp.apply(lineRoutes, stationRoutes)
-      resource(8080, httpApp)
-    }
+    val default =
+      Config(
+        port = 8080,
+        databaseUrl = "jdbc:sqlite:data/london-tube-lines.db"
+      )
 
-    private def resource(port:Int, httpApp: http4s.HttpApp[IO])(implicit T: Timer[IO], C: ConcurrentEffect[IO]): Resource[IO, Server[IO]] =
-      BlazeServerBuilder[IO]
-        .bindHttp(port = port, host = "localhost")
-        .withHttpApp(httpApp)
-        .resource
-
+    case class Config(
+      port: Int,
+      databaseUrl: String
+    )
 
   }
-
+  
 }
