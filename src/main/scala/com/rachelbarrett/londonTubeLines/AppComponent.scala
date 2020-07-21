@@ -10,6 +10,8 @@ import doobie.util.transactor.Transactor
 import org.http4s
 import org.http4s.server.{Server => http4sServer}
 import org.http4s.server.blaze.BlazeServerBuilder
+import cats.effect.Blocker
+import scala.concurrent.ExecutionContext
 
 object AppComponent {
 
@@ -23,11 +25,14 @@ object AppComponent {
       } yield server
 
     private def resource(port:Int, httpApp: http4s.HttpApp[IO])(implicit T: Timer[IO], C: ConcurrentEffect[IO]): Resource[IO, Server] =
-      BlazeServerBuilder[IO]
-        .bindHttp(port = port, host = "localhost")
-        .withHttpApp(httpApp)
-        .resource
-        .map(new Server(_))
+      for {
+        serverEc <- ExecutionContexts.cachedThreadPool[IO]
+        server <- BlazeServerBuilder[IO](serverEc)
+          .bindHttp(port = port, host = "localhost")
+          .withHttpApp(httpApp)
+          .resource
+          .map(new Server(_))
+      } yield server
 
     class Server(server: http4sServer[IO]) {
 
@@ -79,14 +84,14 @@ object AppComponent {
 
     private def hikariTransactor(databaseUrl: String)(implicit cs: ContextShift[IO]): Resource[IO, HikariTransactor[IO]] = for {
       ce <- ExecutionContexts.fixedThreadPool[IO](32) // our connect EC - await connection here
-      te <- ExecutionContexts.cachedThreadPool[IO] // our transaction EC - execute JDBC operations here
+      be <- Blocker[IO] // our blocking EC - execute JDBC operations here
       xa <- HikariTransactor.newHikariTransactor[IO](
         driverClassName = "org.sqlite.JDBC",
         url = databaseUrl,
         user = "",
         pass = "",
-        ce,
-        te
+        connectEC = ce,
+        blocker = be
       )
     } yield xa
 
@@ -112,5 +117,5 @@ object AppComponent {
     )
 
   }
-  
+
 }

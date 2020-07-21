@@ -2,11 +2,11 @@ import sbt._
 
 object Dependencies {
   
-  val http4sVersion = "0.20.6"
+  val http4sVersion = "0.21.5"
   val circeVersion = "0.11.1"
   val scalaTestVersion = "3.0.8"
-  val sqlLiteVersion = "3.28.0"
-  val doobieVersion = "0.7.0"
+  val sqlLiteVersion = "3.32.3"
+  val doobieVersion = "0.9.0"
   
   
   lazy val http4s = Seq(
