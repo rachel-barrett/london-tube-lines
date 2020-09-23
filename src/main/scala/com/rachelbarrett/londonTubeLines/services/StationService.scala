@@ -8,10 +8,22 @@ class StationService(stationLineDao: LineStationDao) {
   type Station = String
 
   def getAllStations(): IO[List[Station]] =
-    stationLineDao.find().map(list => list.map(_.station).distinct)
+    stationLineDao
+      .find()
+      .map(list =>
+        list
+          .map(_.station)
+          .distinct
+        )
 
   def getStationsOnLine(line: String): IO[List[Station]] =
-    stationLineDao.find().map(list => list.filter(_.line == line)).map(list => list.map(_.station))
+    stationLineDao
+      .find()
+      .map(list =>
+        list
+          .filter(_.line == line)
+          .map(_.station)
+        )
 
 }
 

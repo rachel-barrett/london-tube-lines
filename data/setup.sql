@@ -6,7 +6,7 @@ CREATE TABLE lineStation(
 );
 
 INSERT INTO lineStation values
-("Central", "Nptting Hill Gate"),
+("Central", "Notting Hill Gate"),
 ("Central", "Bond Street"),
 ("Jubilee", "Bond Street"),
 ("Jubilee", "Green Park"),
