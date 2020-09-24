@@ -6,7 +6,7 @@ object Main extends IOApp {
 
   def run(args: List[String]): IO[ExitCode] = {
 
-    AppComponent.Server.resource
+    AppComponent.serverResource()
       .use { server => 
         server.runIndefinitely()
       }

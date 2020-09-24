@@ -15,16 +15,16 @@ import scala.concurrent.ExecutionContext
 
 object AppComponent {
 
+  def serverResource()(implicit cs: ContextShift[IO], T: Timer[IO], C: ConcurrentEffect[IO]) : Resource[IO, Server.Server] = for {
+    config <- Resource.liftF(Config.load)
+    environmentHandle <- EnvironmentHandle.resourceApply(config)
+    httpApp = HttpApp.apply(environmentHandle)
+    server <- Server.resourceApply(config.port, httpApp)
+  } yield server
+
   object Server {
 
-    def resource()(implicit cs: ContextShift[IO], T: Timer[IO], C: ConcurrentEffect[IO]): Resource[IO, Server] =
-      for {
-        httpApp <- HttpApp.resource
-        port <- Resource.liftF(Config.load.map(_.port))
-        server <- resource(port, httpApp)
-      } yield server
-
-    private def resource(port:Int, httpApp: http4s.HttpApp[IO])(implicit T: Timer[IO], C: ConcurrentEffect[IO]): Resource[IO, Server] =
+    def resourceApply(port:Int, httpApp: http4s.HttpApp[IO])(implicit T: Timer[IO], C: ConcurrentEffect[IO]): Resource[IO, Server] =
       for {
         serverEc <- ExecutionContexts.cachedThreadPool[IO]
         server <- BlazeServerBuilder[IO](serverEc)
@@ -47,13 +47,7 @@ object AppComponent {
 
   object HttpApp {
 
-    def resource()(implicit cs: ContextShift[IO]): Resource[IO, http4s.HttpApp[IO]] =
-      for {
-        environmentHandle <- EnvironmentHandle.resource
-        httpApp = apply(environmentHandle)
-      } yield httpApp
-
-    private def apply(environmentHandle: EnvironmentHandle.EnvironmentHandle): http4s.HttpApp[IO] =
+    def apply(environmentHandle: EnvironmentHandle.EnvironmentHandle): http4s.HttpApp[IO] =
       {
         val stationLineDao = new LineStationDao(environmentHandle.transactor)
         val lineService = new LineService(stationLineDao)
@@ -68,13 +62,7 @@ object AppComponent {
 
   object EnvironmentHandle {
 
-    def resource()(implicit cs: ContextShift[IO]): Resource[IO, EnvironmentHandle] =
-     for {
-       config <- Resource.liftF(Config.load)
-       environmentHandle <- resource(config)
-     } yield environmentHandle
-
-    private def resource(config: Config.Config)(implicit cs: ContextShift[IO]): Resource[IO, EnvironmentHandle] =
+    def resourceApply(config: Config.Config)(implicit cs: ContextShift[IO]): Resource[IO, EnvironmentHandle] =
       for {
         hikariTransactor <- hikariTransactor(config.databaseUrl)
         environmentHandle = EnvironmentHandle(
